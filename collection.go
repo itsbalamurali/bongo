@@ -40,18 +40,18 @@ type ValidationError struct {
 }
 
 type TimeCreatedTracker interface {
-	GetCreated() time.Time
-	SetCreated(time.Time)
+	GetCreatedAt() time.Time
+	SetCreatedAt(time.Time)
 }
 
 type TimeModifiedTracker interface {
-	GetModified() time.Time
-	SetModified(time.Time)
+	GetUpdatedAt() time.Time
+	SetUpdatedAt(time.Time)
 }
 
 type Document interface {
-	GetId() primitive.ObjectID
-	SetId(primitive.ObjectID)
+	GetID() primitive.ObjectID
+	SetID(primitive.ObjectID)
 }
 
 type CascadingDocument interface {
@@ -133,16 +133,16 @@ func (c *Collection) Save(doc Document) error {
 	now := time.Now()
 
 	if tt, ok := doc.(TimeCreatedTracker); ok && isNew {
-		tt.SetCreated(now)
+		tt.SetCreatedAt(now)
 	}
 
 	if tt, ok := doc.(TimeModifiedTracker); ok {
-		tt.SetModified(now)
+		tt.SetUpdatedAt(now)
 	}
 
 	go CascadeSave(c, doc)
 
-	id := doc.GetId()
+	id := doc.GetID()
 
 	if !isNew && id.IsZero() {
 		return errors.New("New tracker says this document isn't new but there is no valid Id field")
@@ -151,7 +151,7 @@ func (c *Collection) Save(doc Document) error {
 	if isNew && id.IsZero() {
 		// Generate an Id
 		id = primitive.NewObjectID()
-		doc.SetId(id)
+		doc.SetID(id)
 	}
 
 	err = c.UpsertID(id, doc)
@@ -268,7 +268,7 @@ func (c *Collection) DeleteDocument(doc Document) (*mongo.DeleteResult, error) {
 		}
 	}
 
-	res ,err := col.DeleteOne(context.Background(),bson.M{"_id": doc.GetId()})
+	res ,err := col.DeleteOne(context.Background(),bson.M{"_id": doc.GetID()})
 
 	if err != nil {
 		return nil, err
