@@ -9,7 +9,7 @@ import (
 // For test usage
 func getConnection() *Connection {
 	conf := &Config{
-		ConnectionString: "localhost",
+		ConnectionString: "mongodb://localhost",
 		Database:         "bongotest",
 	}
 
@@ -38,7 +38,7 @@ func TestFailSSLConnec(t *testing.T) {
 func TestConnect(t *testing.T) {
 	Convey("should be able to connect to a database using a config", t, func() {
 		conf := &Config{
-			ConnectionString: "localhost",
+			ConnectionString: "mongodb://localhost",
 			Database:         "bongotest",
 		}
 
