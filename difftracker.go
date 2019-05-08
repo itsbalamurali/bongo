@@ -105,7 +105,7 @@ func (d *DiffTracker) Compare(useBson bool) (bool, []string, error) {
 }
 
 func getFields(t reflect.Type) []string {
-	fields := []string{}
+	var fields []string
 
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -124,7 +124,7 @@ func isNilOrInvalid(f reflect.Value) bool {
 	if f.Kind() == reflect.Ptr && f.IsNil() {
 		return true
 	}
-	return (!f.IsValid())
+	return !f.IsValid()
 }
 
 type Stringer interface {
@@ -154,7 +154,7 @@ func GetChangedFields(struct1 interface{}, struct2 interface{}, useBson bool) ([
 	}
 
 	if type1.Kind() != reflect.Struct || type2.Kind() != reflect.Struct {
-		return diffs, errors.New(fmt.Sprintf("Can only compare two structs or two pointers to structs", type1.Kind(), type2.Kind()))
+		return diffs, errors.New(fmt.Sprintf("Can only compare two structs or two pointers to structs %s and %s", type1.Kind(), type2.Kind()))
 	}
 
 	for i := 0; i < type1.NumField(); i++ {
