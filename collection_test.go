@@ -14,6 +14,7 @@ type noHookDocument struct {
 	Name         string
 }
 
+
 type hookedDocument struct {
 	DocumentBase    `bson:",inline"`
 	RanBeforeSave   bool
@@ -57,6 +58,7 @@ type validatedDocument struct {
 	DocumentBase `bson:",inline"`
 	Name         string
 }
+
 
 func (v *validatedDocument) Validate(c *Collection) []error {
 	return []error{errors.New("test validation error")}
@@ -111,7 +113,7 @@ func TestCollection(t *testing.T) {
 			err = conn.Collection("tests").Save(doc)
 
 			So(err, ShouldEqual, nil)
-			count, err := conn.Collection("tests").Collection().Count()
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 1)
 		})
@@ -142,14 +144,14 @@ func TestCollection(t *testing.T) {
 
 		Convey("should find a doc by id", func() {
 			newDoc := &noHookDocument{}
-			err := conn.Collection("tests").FindById(doc.GetID(), newDoc)
+			err := conn.Collection("tests").FindByID(doc.GetID(), newDoc)
 			So(err, ShouldEqual, nil)
 			So(newDoc.ID.Hex(), ShouldEqual, doc.ID.Hex())
 		})
 
 		Convey("should find a doc by id and run afterFind", func() {
 			newDoc := &hookedDocument{}
-			err := conn.Collection("tests").FindById(doc.GetID(), newDoc)
+			err := conn.Collection("tests").FindByID(doc.GetID(), newDoc)
 			So(err, ShouldEqual, nil)
 			So(newDoc.ID.Hex(), ShouldEqual, doc.ID.Hex())
 			So(newDoc.RanAfterFind, ShouldEqual, true)
@@ -157,7 +159,7 @@ func TestCollection(t *testing.T) {
 
 		Convey("should return a document not found error if doc not found", func() {
 
-			err := conn.Collection("tests").FindById(primitive.NewObjectID(), doc)
+			err := conn.Collection("tests").FindByID(primitive.NewObjectID(), doc)
 			_, ok := err.(*DocumentNotFoundError)
 			So(ok, ShouldEqual, true)
 		})
@@ -207,7 +209,7 @@ func TestCollection(t *testing.T) {
 			_, err = conn.Collection("tests").DeleteDocument(doc)
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().Count()
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -222,7 +224,7 @@ func TestCollection(t *testing.T) {
 			_, err = conn.Collection("tests").DeleteDocument(doc)
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().Count()
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -237,12 +239,10 @@ func TestCollection(t *testing.T) {
 			err := conn.Collection("tests").Save(doc)
 			So(err, ShouldEqual, nil)
 
-			_,err = conn.Collection("tests").DeleteOne(bson.D{
-				"_id": doc.ID,
-			})
+			_,err = conn.Collection("tests").DeleteOne(bson.D{{"_id", doc.ID}})
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().Count()
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -254,13 +254,11 @@ func TestCollection(t *testing.T) {
 			err := conn.Collection("tests").Save(doc)
 			So(err, ShouldEqual, nil)
 
-			info, err := conn.Collection("tests").Delete(bson.D{
-				"_id": doc.ID,
-			})
+			info, err := conn.Collection("tests").Delete(bson.D{{"_id", doc.ID}})
 			So(err, ShouldEqual, nil)
 			So(info.DeletedCount, ShouldEqual, 1)
 
-			count, err := conn.Collection("tests").Collection().Count()
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)

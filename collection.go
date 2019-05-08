@@ -3,10 +3,10 @@ package bongo
 import (
 	"context"
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 	"strings"
 )
@@ -117,11 +117,6 @@ func (c *Collection) PreSave(doc Document) error {
 
 func (c *Collection) Save(doc Document) error {
 	var err error
-	//sess := c.Connection.Session.Clone()
-	//defer sess.Close()
-
-	// Per mgo's recommendation, create a clone of the session so there is no blocking
-	col := c.Collection()
 
 	err = c.PreSave(doc)
 	if err != nil {
@@ -159,8 +154,7 @@ func (c *Collection) Save(doc Document) error {
 		doc.SetId(id)
 	}
 
-	_, err = col.UpsertId(id, doc)
-
+	err = c.UpsertID(id, doc)
 	if err != nil {
 		return err
 	}
@@ -180,7 +174,7 @@ func (c *Collection) Save(doc Document) error {
 	return nil
 }
 
-func (c *Collection) FindById(id primitive.ObjectID, doc interface{}) error {
+func (c *Collection) FindByID(id primitive.ObjectID, doc interface{}) error {
 
 	filter := bson.D{{"_id", id}}
 
@@ -212,31 +206,40 @@ func (c *Collection) FindById(id primitive.ObjectID, doc interface{}) error {
 
 // This doesn't actually do any DB interaction, it just creates the result set so we can
 // start looping through on the iterator
-func (c *Collection) Find(query interface{}) *ResultSet {
+func (c *Collection) Find(query interface{}) (*ResultSet,error) {
 	col := c.Collection()
 
 	// Count for testing
-	q, err := col.Find(context.Background(),query)
-
+	cursor, err := col.Find(context.Background(),query)
 	resultset := new(ResultSet)
-	if err != nil {
-		log.Errorln(err)
-	}
-	resultset.Query = q
+
+	opts := &options.FindOptions{}
+
+	resultset.Query = opts
+	resultset.Cursor = cursor
 	resultset.Params = query
 	resultset.Collection = c
 
-	return resultset
+	return resultset, err
+}
+
+func (c *Collection) UpsertID(id primitive.ObjectID, doc interface{}) error {
+	_, err := c.Collection().UpdateOne(context.Background(),bson.D{{"_id", id}}, doc)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Collection) FindOne(query interface{}, doc interface{}) error {
 
 	// Now run a find
-	results := c.Find(query)
-	results.Query.Limit(1)
-
+	results ,err  := c.Find(query)
+	if err != nil{
+		return err
+	}
+	results.Query.SetLimit(1)
 	hasNext := results.Next(doc)
-
 	if !hasNext {
 		// There could have been an error fetching the next one, which would set the Error property on the resultset
 		if results.Error != nil {
@@ -244,7 +247,6 @@ func (c *Collection) FindOne(query interface{}, doc interface{}) error {
 		} else {
 			return &DocumentNotFoundError{}
 		}
-
 	}
 
 	if newt, ok := doc.(NewTracker); ok {

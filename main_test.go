@@ -2,7 +2,7 @@ package bongo
 
 import (
 	"testing"
-
+	"context"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -43,14 +43,13 @@ func TestConnect(t *testing.T) {
 		}
 
 		conn, err := Connect(conf)
-		defer conn.Session.Close()
 		So(err, ShouldEqual, nil)
 
 		conn.Context.Set("foo", "bar")
 		value := conn.Context.Get("foo")
 		So(value, ShouldEqual, "bar")
 
-		err = conn.Session.Ping()
+		err = conn.Session.Ping(context.Background(),nil)
 		So(err, ShouldEqual, nil)
 	})
 }
@@ -58,7 +57,6 @@ func TestConnect(t *testing.T) {
 func TestRetrieveCollection(t *testing.T) {
 	Convey("should be able to retrieve a collection instance from a connection", t, func() {
 		conn := getConnection()
-		defer conn.Session.Close()
 		col := conn.Collection("tests");
 		So(col.Name, ShouldEqual, "tests")
 		So(col.Connection, ShouldEqual, conn)
@@ -69,7 +67,6 @@ func TestRetrieveCollection(t *testing.T) {
 	})
 	Convey("should be able to retrieve a collection instance from a connection with different databases", t, func() {
 		conn := getConnection()
-		defer conn.Session.Close()
 
 		col1 := conn.CollectionFromDatabase("tests", "test1");
 		So(col1.Name, ShouldEqual, "tests")

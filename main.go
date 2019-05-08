@@ -54,7 +54,6 @@ func (m *Connection) Connect() (err error) {
 		}
 	}()
 
-
 	client, err := mongo.NewClient(options.Client().ApplyURI(m.Config.ConnectionString))
 	if err != nil { return err }
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -62,14 +61,7 @@ func (m *Connection) Connect() (err error) {
 	err = client.Connect(ctx)
 	if err != nil { return err }
 
-	//session, err := mgo.DialWithInfo(m.Config.DialInfo)
-	//if err != nil {
-	//	return err
-	//}
-
 	m.Session = client
-
-	//m.Session.SetMode(mgo.Monotonic, true)
 
 	return nil
 }

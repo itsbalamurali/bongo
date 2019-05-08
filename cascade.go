@@ -77,8 +77,10 @@ func CascadeSave(collection *Collection, doc Document) error {
 				return err
 			}
 			if conf.Nest {
-				results := conf.Collection.Find(conf.Query)
-
+				results, err := conf.Collection.Find(conf.Query)
+				if err != nil {
+					return err
+				}
 				for results.Next(conf.Instance) {
 					err = CascadeSave(conf.Collection, conf.Instance)
 					if err != nil {
@@ -135,7 +137,7 @@ func cascadeDeleteWithConfig(conf *CascadeConfig) (*mongo.UpdateResult, error) {
 			}
 		}
 
-		return conf.Collection.Collection().UpdateMany(context.Background(),conf.Query, update)
+		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update)
 	case REL_MANY:
 		update := map[string]map[string]interface{}{
 			"$pull": map[string]interface{}{},
@@ -146,7 +148,7 @@ func cascadeDeleteWithConfig(conf *CascadeConfig) (*mongo.UpdateResult, error) {
 			q[f.BsonName] = f.Value
 		}
 		update["$pull"][conf.ThroughProp] = q
-		return conf.Collection.Collection().UpdateMany(context.Background(),conf.Query, update)
+		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update)
 	}
 
 	return &mongo.UpdateResult{}, errors.New("Invalid relation type")
@@ -174,7 +176,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 				}
 			}
 
-			ret, err := conf.Collection.Collection().UpdateMany(context.Background(),conf.OldQuery, update1)
+			ret, err := conf.Collection.Collection().UpdateMany(context.Background(), conf.OldQuery, update1)
 
 			if conf.RemoveOnly {
 				return ret, err
@@ -192,7 +194,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 		}
 
 		// Just update
-		return conf.Collection.Collection().UpdateMany(context.Background(),conf.Query, update)
+		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update)
 	case REL_MANY:
 
 		update1 := map[string]map[string]interface{}{
@@ -206,21 +208,21 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 		update1["$pull"][conf.ThroughProp] = q
 
 		if len(conf.OldQuery) > 0 {
-			ret, err := conf.Collection.Collection().UpdateMany(context.Background(),conf.OldQuery, update1)
+			ret, err := conf.Collection.Collection().UpdateMany(context.Background(), conf.OldQuery, update1)
 			if conf.RemoveOnly {
 				return ret, err
 			}
 		}
 
 		// Remove self from current relations, so we can replace it
-		conf.Collection.Collection().UpdateMany(context.Background(),conf.Query, update1)
+		conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update1)
 
 		update2 := map[string]map[string]interface{}{
 			"$push": map[string]interface{}{},
 		}
 
 		update2["$push"][conf.ThroughProp] = data
-		return conf.Collection.Collection().UpdateMany(context.Background(),conf.Query, update2)
+		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update2)
 
 	}
 

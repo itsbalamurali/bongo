@@ -1,13 +1,15 @@
 package bongo
 
 import (
-	"github.com/globalsign/mgo"
+	"context"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math"
 )
 
 type ResultSet struct {
-	Query      *mgo.Query
-	Iter       *mgo.Iter
+	Query      *options.FindOptions
+	Cursor     *mongo.Cursor
 	loadedIter bool
 	Collection *Collection
 	Error      error
@@ -18,7 +20,7 @@ type PaginationInfo struct {
 	Current       int `json:"current"`
 	TotalPages    int `json:"totalPages"`
 	PerPage       int `json:"perPage"`
-	TotalRecords  int `json:"totalRecords"`
+	TotalRecords  int64 `json:"totalRecords"`
 	RecordsOnPage int `json:"recordsOnPage"`
 }
 
@@ -26,11 +28,10 @@ func (r *ResultSet) Next(doc interface{}) bool {
 
 	// Check if the iter has been instantiated yet
 	if !r.loadedIter {
-		r.Iter = r.Query.Iter()
 		r.loadedIter = true
 	}
 
-	gotResult := r.Iter.Next(doc)
+	gotResult := r.Cursor.Next(context.Background())
 
 	if gotResult {
 
@@ -48,7 +49,7 @@ func (r *ResultSet) Next(doc interface{}) bool {
 		return true
 	}
 
-	err := r.Iter.Err()
+	err := r.Cursor.Err()
 	if err != nil {
 		r.Error = err
 	}
@@ -58,7 +59,7 @@ func (r *ResultSet) Next(doc interface{}) bool {
 
 func (r *ResultSet) Free() error {
 	if r.loadedIter {
-		if err := r.Iter.Close(); err != nil {
+		if err := r.Cursor.Close(context.Background()); err != nil {
 			return err
 		}
 	}
@@ -68,14 +69,10 @@ func (r *ResultSet) Free() error {
 
 // Set skip + limit on the current query and generates a PaginationInfo struct with info for your front end
 func (r *ResultSet) Paginate(perPage, page int) (*PaginationInfo, error) {
-
 	info := new(PaginationInfo)
-
 	// Get count on a different session to avoid blocking
-	sess := r.Collection.Connection.Session.Copy()
-
-	count, err := sess.DB(r.Collection.Database).C(r.Collection.Name).Find(r.Params).Count()
-	sess.Close()
+	sess := r.Collection.Connection.Session
+	count, err := sess.Database(r.Collection.Database).Collection(r.Collection.Name).CountDocuments(context.Background(),nil)
 
 	if err != nil {
 		return info, err
@@ -92,7 +89,7 @@ func (r *ResultSet) Paginate(perPage, page int) (*PaginationInfo, error) {
 
 	skip := (page - 1) * perPage
 
-	r.Query.Skip(skip).Limit(perPage)
+	r.Query.SetSkip(int64(skip)).SetLimit(int64(perPage))
 
 	info.TotalPages = totalPages
 	info.PerPage = perPage
