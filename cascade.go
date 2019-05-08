@@ -70,7 +70,7 @@ func CascadeSave(collection *Collection, doc Document) error {
 		for _, conf := range toCascade {
 
 			if len(conf.ReferenceQuery) == 0 {
-				conf.ReferenceQuery = []*ReferenceField{&ReferenceField{"_id", doc.GetId()}}
+				conf.ReferenceQuery = []*ReferenceField{&ReferenceField{"_id", doc.GetID()}}
 			}
 			_, err := cascadeSaveWithConfig(conf, doc)
 			if err != nil {
