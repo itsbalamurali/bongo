@@ -1,11 +1,11 @@
 package bongo
 
 import (
+	"context"
 	"errors"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"context"
 	"testing"
 )
 
@@ -13,7 +13,6 @@ type noHookDocument struct {
 	DocumentBase `bson:",inline"`
 	Name         string
 }
-
 
 type hookedDocument struct {
 	DocumentBase    `bson:",inline"`
@@ -58,7 +57,6 @@ type validatedDocument struct {
 	DocumentBase `bson:",inline"`
 	Name         string
 }
-
 
 func (v *validatedDocument) Validate(c *Collection) []error {
 	return []error{errors.New("test validation error")}
@@ -113,7 +111,7 @@ func TestCollection(t *testing.T) {
 			err = conn.Collection("tests").Save(doc)
 
 			So(err, ShouldEqual, nil)
-			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(), bson.D{})
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 1)
 		})
@@ -209,7 +207,7 @@ func TestCollection(t *testing.T) {
 			_, err = conn.Collection("tests").DeleteDocument(doc)
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(), bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -224,7 +222,7 @@ func TestCollection(t *testing.T) {
 			_, err = conn.Collection("tests").DeleteDocument(doc)
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(), bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -239,10 +237,10 @@ func TestCollection(t *testing.T) {
 			err := conn.Collection("tests").Save(doc)
 			So(err, ShouldEqual, nil)
 
-			_,err = conn.Collection("tests").DeleteOne(bson.D{{"_id", doc.ID}})
+			_, err = conn.Collection("tests").DeleteOne(bson.D{{"_id", doc.ID}})
 			So(err, ShouldEqual, nil)
 
-			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(), bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)
@@ -258,7 +256,7 @@ func TestCollection(t *testing.T) {
 			So(err, ShouldEqual, nil)
 			So(info.DeletedCount, ShouldEqual, 1)
 
-			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(),bson.D{})
+			count, err := conn.Collection("tests").Collection().CountDocuments(context.Background(), bson.D{})
 
 			So(err, ShouldEqual, nil)
 			So(count, ShouldEqual, 0)

@@ -7,8 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 	"strings"
+	"time"
 )
 
 type BeforeSaveHook interface {
@@ -116,6 +116,8 @@ func (c *Collection) PreSave(doc Document) error {
 }
 
 func (c *Collection) Save(doc Document) error {
+
+
 	var err error
 
 	err = c.PreSave(doc)
@@ -140,12 +142,14 @@ func (c *Collection) Save(doc Document) error {
 		tt.SetUpdatedAt(now)
 	}
 
+
 	go CascadeSave(c, doc)
 
 	id := doc.GetID()
 
+
 	if !isNew && id.IsZero() {
-		return errors.New("New tracker says this document isn't new but there is no valid Id field")
+		return errors.New("new tracker says this document isn't new but there is no valid Id field")
 	}
 
 	if isNew && id.IsZero() {
@@ -153,6 +157,8 @@ func (c *Collection) Save(doc Document) error {
 		id = primitive.NewObjectID()
 		doc.SetID(id)
 	}
+
+
 
 	err = c.UpsertID(id, doc)
 	if err != nil {
@@ -206,11 +212,11 @@ func (c *Collection) FindByID(id primitive.ObjectID, doc interface{}) error {
 
 // This doesn't actually do any DB interaction, it just creates the result set so we can
 // start looping through on the iterator
-func (c *Collection) Find(query interface{}) (*ResultSet,error) {
+func (c *Collection) Find(query interface{}) (*ResultSet, error) {
 	col := c.Collection()
 
 	// Count for testing
-	cursor, err := col.Find(context.Background(),query)
+	cursor, err := col.Find(context.Background(), query)
 	resultset := new(ResultSet)
 
 	opts := &options.FindOptions{}
@@ -223,8 +229,11 @@ func (c *Collection) Find(query interface{}) (*ResultSet,error) {
 	return resultset, err
 }
 
+
 func (c *Collection) UpsertID(id primitive.ObjectID, doc interface{}) error {
-	_, err := c.Collection().UpdateOne(context.Background(),bson.D{{"_id", id}}, doc)
+	upsertopts := &options.ReplaceOptions{}
+	upsertopts.SetUpsert(true)
+	_, err := c.Collection().ReplaceOne(context.Background(), bson.D{{"_id", id}}, doc, upsertopts)
 	if err != nil {
 		return err
 	}
@@ -232,10 +241,9 @@ func (c *Collection) UpsertID(id primitive.ObjectID, doc interface{}) error {
 }
 
 func (c *Collection) FindOne(query interface{}, doc interface{}) error {
-
 	// Now run a find
-	results ,err  := c.Find(query)
-	if err != nil{
+	results, err := c.Find(query)
+	if err != nil {
 		return err
 	}
 	results.Query.SetLimit(1)
@@ -268,7 +276,7 @@ func (c *Collection) DeleteDocument(doc Document) (*mongo.DeleteResult, error) {
 		}
 	}
 
-	res ,err := col.DeleteOne(context.Background(),bson.M{"_id": doc.GetID()})
+	res, err := col.DeleteOne(context.Background(), bson.M{"_id": doc.GetID()})
 
 	if err != nil {
 		return nil, err
@@ -290,11 +298,11 @@ func (c *Collection) DeleteDocument(doc Document) (*mongo.DeleteResult, error) {
 // Convenience method which just delegates to mgo. Note that hooks are NOT run
 func (c *Collection) Delete(query bson.D) (*mongo.DeleteResult, error) {
 	col := c.Collection()
-	return col.DeleteMany(context.Background(),query)
+	return col.DeleteMany(context.Background(), query)
 }
 
 // Convenience method which just delegates to mgo. Note that hooks are NOT run
 func (c *Collection) DeleteOne(query bson.D) (*mongo.DeleteResult, error) {
 	col := c.Collection()
-	return col.DeleteOne(context.Background(),query)
+	return col.DeleteOne(context.Background(), query)
 }

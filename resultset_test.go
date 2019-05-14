@@ -1,10 +1,10 @@
 package bongo
 
 import (
+	"context"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
 	"testing"
-	"context"
 )
 
 func TestResultSet(t *testing.T) {
@@ -19,7 +19,7 @@ func TestResultSet(t *testing.T) {
 		}
 
 		Convey("should let you iterate through all results without paginating", func() {
-			rset,_ := collection.Find(nil)
+			rset, _ := collection.Find(nil)
 			defer rset.Free()
 			count := 0
 
@@ -33,7 +33,7 @@ func TestResultSet(t *testing.T) {
 		})
 
 		Convey("should let you paginate and get pagination info", func() {
-			rset,_ := collection.Find(nil)
+			rset, _ := collection.Find(nil)
 			defer rset.Free()
 			info, err := rset.Paginate(3, 1)
 			So(err, ShouldEqual, nil)
@@ -43,7 +43,7 @@ func TestResultSet(t *testing.T) {
 			So(info.PerPage, ShouldEqual, 3)
 			So(info.RecordsOnPage, ShouldEqual, 3)
 
-			rset2,_ := collection.Find(nil)
+			rset2, _ := collection.Find(nil)
 			defer rset2.Free()
 			info, err = rset2.Paginate(3, 4)
 			So(err, ShouldEqual, nil)
@@ -73,7 +73,7 @@ func TestResultSet(t *testing.T) {
 		}
 
 		Convey("should let you iterate through all filtered results without paginating", func() {
-			rset,_ := collection.Find(bson.M{
+			rset, _ := collection.Find(bson.M{
 				"name": "foo",
 			})
 			defer rset.Free()
@@ -90,7 +90,7 @@ func TestResultSet(t *testing.T) {
 		})
 
 		Convey("should let you paginate and get pagination info on filtered query", func() {
-			rset,_ := collection.Find(bson.M{
+			rset, _ := collection.Find(bson.M{
 				"name": "foo",
 			})
 			defer rset.Free()
@@ -102,7 +102,7 @@ func TestResultSet(t *testing.T) {
 			So(info.PerPage, ShouldEqual, 3)
 			So(info.RecordsOnPage, ShouldEqual, 3)
 
-			rset2,_ := collection.Find(bson.M{
+			rset2, _ := collection.Find(bson.M{
 				"name": "foo",
 			})
 			defer rset2.Free()
@@ -128,7 +128,7 @@ func TestResultSet(t *testing.T) {
 		}
 
 		Convey("should let you iterate through all results without paginating", func() {
-			rset,_ := collection.Find(nil)
+			rset, _ := collection.Find(nil)
 			defer rset.Free()
 			count := 0
 

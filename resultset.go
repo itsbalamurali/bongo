@@ -17,11 +17,11 @@ type ResultSet struct {
 }
 
 type PaginationInfo struct {
-	Current       int `json:"current"`
-	TotalPages    int `json:"totalPages"`
-	PerPage       int `json:"perPage"`
+	Current       int   `json:"current"`
+	TotalPages    int   `json:"totalPages"`
+	PerPage       int   `json:"perPage"`
 	TotalRecords  int64 `json:"totalRecords"`
-	RecordsOnPage int `json:"recordsOnPage"`
+	RecordsOnPage int   `json:"recordsOnPage"`
 }
 
 func (r *ResultSet) Next(doc interface{}) bool {
@@ -72,7 +72,7 @@ func (r *ResultSet) Paginate(perPage, page int) (*PaginationInfo, error) {
 	info := new(PaginationInfo)
 	// Get count on a different session to avoid blocking
 	sess := r.Collection.Connection.Session
-	count, err := sess.Database(r.Collection.Database).Collection(r.Collection.Name).CountDocuments(context.Background(),nil)
+	count, err := sess.Database(r.Collection.Database).Collection(r.Collection.Name).CountDocuments(context.Background(), nil)
 
 	if err != nil {
 		return info, err

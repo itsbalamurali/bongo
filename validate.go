@@ -13,7 +13,7 @@ func ValidateRequired(val interface{}) bool {
 }
 
 func ValidateMongoIdRef(id primitive.ObjectID, collection *Collection) bool {
-	cur, err := collection.Collection().Find(context.Background(),bson.M{"_id": id})
+	cur, err := collection.Collection().Find(context.Background(), bson.M{"_id": id})
 	if err != nil || cur.Err() != nil || cur != nil {
 		return false
 	}

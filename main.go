@@ -12,7 +12,7 @@ import (
 type Config struct {
 	ConnectionString string
 	Database         string
-	ClientOptions         *options.ClientOptions
+	ClientOptions    *options.ClientOptions
 }
 
 // var EncryptionKey [32]byte
@@ -55,11 +55,15 @@ func (m *Connection) Connect() (err error) {
 	}()
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(m.Config.ConnectionString))
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 	err = client.Connect(ctx)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	m.Session = client
 

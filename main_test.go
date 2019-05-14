@@ -1,9 +1,9 @@
 package bongo
 
 import (
-	"testing"
 	"context"
 	. "github.com/smartystreets/goconvey/convey"
+	"testing"
 )
 
 // For test usage
@@ -31,7 +31,7 @@ func TestFailSSLConnec(t *testing.T) {
 		}
 
 		_, err := Connect(conf)
-		So(err.Error(), ShouldEqual, "cannot parse given URI mongodb://localhost:27017?ssl=true due to error: unsupported connection URL option: ssl=true")
+		So(err.Error(), ShouldEqual, "error parsing uri (mongodb://localhost:27017?ssl=true): must have a / before the query ?")
 	})
 }
 
@@ -49,7 +49,7 @@ func TestConnect(t *testing.T) {
 		value := conn.Context.Get("foo")
 		So(value, ShouldEqual, "bar")
 
-		err = conn.Session.Ping(context.Background(),nil)
+		err = conn.Session.Ping(context.Background(), nil)
 		So(err, ShouldEqual, nil)
 	})
 }
@@ -57,7 +57,7 @@ func TestConnect(t *testing.T) {
 func TestRetrieveCollection(t *testing.T) {
 	Convey("should be able to retrieve a collection instance from a connection", t, func() {
 		conn := getConnection()
-		col := conn.Collection("tests");
+		col := conn.Collection("tests")
 		So(col.Name, ShouldEqual, "tests")
 		So(col.Connection, ShouldEqual, conn)
 
@@ -68,12 +68,12 @@ func TestRetrieveCollection(t *testing.T) {
 	Convey("should be able to retrieve a collection instance from a connection with different databases", t, func() {
 		conn := getConnection()
 
-		col1 := conn.CollectionFromDatabase("tests", "test1");
+		col1 := conn.CollectionFromDatabase("tests", "test1")
 		So(col1.Name, ShouldEqual, "tests")
 		So(col1.Connection, ShouldEqual, conn)
 		So(col1.Database, ShouldEqual, "test1")
 
-		col2 := conn.CollectionFromDatabase("tests", "test2");
+		col2 := conn.CollectionFromDatabase("tests", "test2")
 		So(col2.Name, ShouldEqual, "tests")
 		So(col2.Connection, ShouldEqual, conn)
 		So(col2.Database, ShouldEqual, "test2")

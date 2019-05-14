@@ -68,9 +68,8 @@ func CascadeSave(collection *Collection, doc Document) error {
 	if conv, ok := doc.(CascadingDocument); ok {
 		toCascade := conv.GetCascade(collection)
 		for _, conf := range toCascade {
-
 			if len(conf.ReferenceQuery) == 0 {
-				conf.ReferenceQuery = []*ReferenceField{&ReferenceField{"_id", doc.GetID()}}
+				conf.ReferenceQuery = []*ReferenceField{{"_id", doc.GetID()}}
 			}
 			_, err := cascadeSaveWithConfig(conf, doc)
 			if err != nil {
@@ -110,7 +109,7 @@ func CascadeDelete(collection *Collection, doc interface{}) {
 				if err != nil {
 					panic(err)
 				}
-				conf.ReferenceQuery = []*ReferenceField{&ReferenceField{"_id", id}}
+				conf.ReferenceQuery = []*ReferenceField{{"_id", id}}
 			}
 
 			cascadeDeleteWithConfig(conf)
@@ -126,7 +125,7 @@ func cascadeDeleteWithConfig(conf *CascadeConfig) (*mongo.UpdateResult, error) {
 	switch conf.RelType {
 	case REL_ONE:
 		update := map[string]map[string]interface{}{
-			"$set": map[string]interface{}{},
+			"$set": {},
 		}
 
 		if len(conf.ThroughProp) > 0 {
@@ -140,7 +139,7 @@ func cascadeDeleteWithConfig(conf *CascadeConfig) (*mongo.UpdateResult, error) {
 		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update)
 	case REL_MANY:
 		update := map[string]map[string]interface{}{
-			"$pull": map[string]interface{}{},
+			"$pull": {},
 		}
 
 		q := bson.M{}
@@ -151,13 +150,12 @@ func cascadeDeleteWithConfig(conf *CascadeConfig) (*mongo.UpdateResult, error) {
 		return conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update)
 	}
 
-	return &mongo.UpdateResult{}, errors.New("Invalid relation type")
+	return &mongo.UpdateResult{}, errors.New("invalid relation type")
 }
 
 // Runs a cascaded save operation with one configuration
 func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResult, error) {
 	// Create a new map with just the props to cascade
-
 	data := conf.Data
 
 	switch conf.RelType {
@@ -165,7 +163,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 		if len(conf.OldQuery) > 0 {
 
 			update1 := map[string]map[string]interface{}{
-				"$set": map[string]interface{}{},
+				"$set": {},
 			}
 
 			if len(conf.ThroughProp) > 0 {
@@ -198,7 +196,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 	case REL_MANY:
 
 		update1 := map[string]map[string]interface{}{
-			"$pull": map[string]interface{}{},
+			"$pull": {},
 		}
 
 		q := bson.M{}
@@ -218,7 +216,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 		conf.Collection.Collection().UpdateMany(context.Background(), conf.Query, update1)
 
 		update2 := map[string]map[string]interface{}{
-			"$push": map[string]interface{}{},
+			"$push": {},
 		}
 
 		update2["$push"][conf.ThroughProp] = data
@@ -226,7 +224,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 
 	}
 
-	return &mongo.UpdateResult{}, errors.New("Invalid relation type")
+	return &mongo.UpdateResult{}, errors.New("invalid relation type")
 
 }
 

@@ -1,12 +1,12 @@
 package bongo
 
 import (
+	"context"
 	. "github.com/smartystreets/goconvey/convey"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"reflect"
 	"testing"
-	"context"
 	"time"
 )
 
@@ -150,8 +150,8 @@ func TestCascade(t *testing.T) {
 	connection := getConnection()
 	// defer connection.Session.Close()
 
-	Convey("Cascade Save/Delete - full runthrough", t, func() {
-		connection.Session.Database("bongotest").Drop(context.Background())
+	Convey("Cascade Save/Delete - full run through", t, func() {
+		_ = connection.Session.Database("bongotest").Drop(context.Background())
 		collection := connection.Collection("parents")
 
 		childCollection := connection.Collection("children")
@@ -185,7 +185,7 @@ func TestCascade(t *testing.T) {
 
 		child.GetDiffTracker().Reset()
 		newParent := &Parent{}
-		collection.FindByID(parent.ID, newParent)
+		_ = collection.FindByID(parent.ID, newParent)
 
 		So(newParent.Child.Name, ShouldEqual, "Foo McGoo")
 		So(newParent.Child.ID.Hex(), ShouldEqual, child.ID.Hex())

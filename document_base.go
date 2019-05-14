@@ -6,10 +6,10 @@ import (
 )
 
 type DocumentBase struct {
-	ID              primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	CreatedAt       time.Time          `json:"created_at" bson:"created_at"`
-	DeletedAt       time.Time          `json:"deleted_at,omitempty" bson:"deleted_at,omitempty"`
-	UpdatedAt       time.Time          `json:"updated_at" bson:"updated_at"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	CreatedAt time.Time          `json:"created_at" bson:"created_at"`
+	DeletedAt time.Time          `json:"deleted_at,omitempty" bson:"deleted_at,omitempty"`
+	UpdatedAt time.Time          `json:"updated_at" bson:"updated_at"`
 	// We want this to default to false without any work. So this will be the opposite of isNew. We want it to be new unless set to existing
 	exists bool
 }
@@ -53,7 +53,6 @@ func (d *DocumentBase) SetUpdatedAt(t time.Time) {
 func (d *DocumentBase) GetUpdatedAt() time.Time {
 	return d.UpdatedAt
 }
-
 
 // Sets the deleted date
 func (d *DocumentBase) SetDeletedAt(t time.Time) {
