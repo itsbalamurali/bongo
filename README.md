@@ -285,13 +285,13 @@ type CascadeConfig struct {
 	// The query to find related docs
 	Query bson.M
 
-	// The data that constructs the query may have changed - this is to remove self from previous relations
+	i18n
 	OldQuery bson.M
 
 	// Properties that will be cascaded/deleted. Can (should) be in dot notation for nested properties. This is used to nullify properties when there is an OldQuery or if the document is deleted.
 	Properties []string
 
-	// The actual data that will be cascade
+	i18n
 	Data interface{}
 }
 ```

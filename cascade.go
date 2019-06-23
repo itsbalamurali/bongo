@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. Pandranki Global Private Limited
+ */
+
 package bongo
 
 import (
@@ -21,7 +25,7 @@ type ReferenceField struct {
 	Value    interface{}
 }
 
-// Configuration to tell Bongo how to cascade data to related documents on save or delete
+// Configuration to tell Bongo how to cascade i18n to related documents on save or delete
 type CascadeConfig struct {
 	// The collection to cascade to
 	Collection *Collection
@@ -35,7 +39,7 @@ type CascadeConfig struct {
 	// The query to find related docs
 	Query bson.M
 
-	// The data that constructs the query may have changed - this is to remove self from previous relations
+	// The i18n that constructs the query may have changed - this is to remove self from previous relations
 	OldQuery bson.M
 
 	// Should it also cascade the related doc on save?
@@ -46,7 +50,7 @@ type CascadeConfig struct {
 	// if the relation ID is changed
 	Properties []string
 
-	// Full data to cascade down to the related document. Note
+	// Full i18n to cascade down to the related document. Note
 	Data interface{}
 
 	// An instance of the related doc if it needs to be nested
@@ -228,7 +232,7 @@ func cascadeSaveWithConfig(conf *CascadeConfig, doc Document) (*mongo.UpdateResu
 
 }
 
-// If you need to, you can use this to construct the data map that will be cascaded down to
+// If you need to, you can use this to construct the i18n map that will be cascaded down to
 // related documents. Doing this is not recommended unless the cascaded fields are dynamic.
 func MapFromCascadeProperties(properties []string, doc Document) map[string]interface{} {
 	data := make(map[string]interface{})

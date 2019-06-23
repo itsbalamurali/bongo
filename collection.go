@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2019. Pandranki Global Private Limited
+ */
+
 package bongo
 
 import (
@@ -117,7 +121,6 @@ func (c *Collection) PreSave(doc Document) error {
 
 func (c *Collection) Save(doc Document) error {
 
-
 	var err error
 
 	err = c.PreSave(doc)
@@ -142,11 +145,9 @@ func (c *Collection) Save(doc Document) error {
 		tt.SetUpdatedAt(now)
 	}
 
-
 	go CascadeSave(c, doc)
 
 	id := doc.GetID()
-
 
 	if !isNew && id.IsZero() {
 		return errors.New("new tracker says this document isn't new but there is no valid Id field")
@@ -157,8 +158,6 @@ func (c *Collection) Save(doc Document) error {
 		id = primitive.NewObjectID()
 		doc.SetID(id)
 	}
-
-
 
 	err = c.UpsertID(id, doc)
 	if err != nil {
@@ -228,7 +227,6 @@ func (c *Collection) Find(query interface{}) (*ResultSet, error) {
 
 	return resultset, err
 }
-
 
 func (c *Collection) UpsertID(id primitive.ObjectID, doc interface{}) error {
 	upsertopts := &options.ReplaceOptions{}
